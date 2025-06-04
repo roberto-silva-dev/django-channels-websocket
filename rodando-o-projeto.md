@@ -27,6 +27,12 @@ pip install -r requirements.txt
 
 ```bash
 daphne -b 127.0.0.1 -p 8000 core.asgi:application
+#OU
+python -m daphne -b 127.0.0.1 -p 8000 core.asgi:application
+#OU
+daphne core.asgi:application
+#OU
+python -m daphne core.asgi:application
 ```
 
 ## Testando o Chat
