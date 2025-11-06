@@ -53,27 +53,29 @@ CHANNEL_LAYERS = {
 ### 5. Configure o `asgi.py`
 ```python
 import os
-import django
-from channels.routing import get_default_application
-
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core.settings")
-django.setup()
-application = get_default_application()
-```
-
-### 6. Crie o `routing.py` no projeto
-```python
-from channels.auth import AuthMiddlewareStack
 from channels.routing import ProtocolTypeRouter, URLRouter
+from channels.auth import AuthMiddlewareStack
+from django.core.asgi import get_asgi_application
 import chat.routing
 
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
+
 application = ProtocolTypeRouter({
-    "websocket": AuthMiddlewareStack(
-        URLRouter(
-            chat.routing.websocket_urlpatterns
-        )
+    'http': get_asgi_application(),
+    'websocket': AuthMiddlewareStack(
+        URLRouter(chat.routing.websocket_urlpatterns)
     ),
 })
+```
+
+### 6. Crie o `chat/routing.py` no projeto
+```python
+from django.urls import re_path
+from . import consumers
+
+websocket_urlpatterns = [
+    re_path(r'ws/chat/(?P<room_name>\w+)/$', consumers.ChatConsumer.as_asgi()),
+]
 ```
 
 ### 7. Crie o `consumers.py` no app `chat`
@@ -206,6 +208,7 @@ urlpatterns = [
 ### 11. Executar com Daphne (ao invés do `manage.py runserver`)
 ```bash
 daphne -b 127.0.0.1 -p 8000 core.asgi:application
+python -m daphne -b 192.168.1.17 -p 8000 core.asgi:application
 #OU
 python -m daphne -b 127.0.0.1 -p 8000 core.asgi:application
 #OU
